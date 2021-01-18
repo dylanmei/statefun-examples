@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package shopping;
+
+// Ingress activity
+message Restock {
+  string id = 1;
+  int32 quantity = 2;
+}
+
+message Purchase {
+  string id = 1;
+  int32 quantity = 2;
+}
+
+// State
+message Supply {
+  string id = 1;
+  int32 quantity = 2;
+}
+
+// Egress events
+message SupplyChanged {
+  string id = 1;
+  int32 total_quantity = 2;
+  int32 difference = 3;
+}

@@ -1,0 +1,51 @@
+version: "1.0"
+module:
+  meta:
+    type: remote
+  spec:
+    functions:
+    - function:
+        meta:
+          kind: http
+          type: shopping/product
+        spec:
+          endpoint: http://app:8000/statefun
+          states:
+          - supply
+          maxNumBatchRequests: 500
+          timeout: 2min
+    ingresses:
+    - ingress:
+        meta:
+          type: statefun.kafka.io/routable-protobuf-ingress
+          id: shopping/restock
+        spec:
+          address: kafka-broker:19092
+          consumerGroupId: remote-example
+          topics:
+          - topic: restock
+            typeUrl: com.googleapis/shopping.Restock
+            targets:
+            - shopping/product
+    - ingress:
+        meta:
+          type: statefun.kafka.io/routable-protobuf-ingress
+          id: shopping/purchase
+        spec:
+          address: kafka-broker:19092
+          consumerGroupId: remote-example
+          topics:
+          - topic: purchase
+            typeUrl: com.googleapis/shopping.Purchase
+            targets:
+            - shopping/product
+    egresses:
+    - egress:
+        meta:
+          type: statefun.kafka.io/generic-egress
+          id: shopping/supply-changed
+        spec:
+          address: kafka-broker:19092
+          deliverySemantic:
+            type: exactly-once
+            transactionTimeoutMillis: 100000
