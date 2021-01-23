@@ -9,4 +9,8 @@ Demonstrates one function named `product` which allows for _purchasing_ products
 
 ### embedded-example
 
-Demonstrates two functions, named `supply` and `basket`. The functions coordinate to allow users to _request_ products to add to their shopping basket.
+Demonstrates two functions, named `supply` and `basket`. The functions coordinate to allow users to _request_ products to _add_ to their shopping basket.
+
+### bootstrap-example
+
+Demontrates the generation of a savepoint file with data that we can use to bootstrap our example applications.
