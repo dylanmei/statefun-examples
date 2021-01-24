@@ -2,3 +2,4 @@ aiohttp
 flask==1.1.1
 gunicorn==20.0.4
 apache-flink-statefun
+pluralizer==1.1.0

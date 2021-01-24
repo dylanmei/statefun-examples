@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package shopping.protocols;
+
+option java_package = "shopping.protocols";
+option java_multiple_files = false;
+
+message Supply {
+  int32 quantity = 1;
+}

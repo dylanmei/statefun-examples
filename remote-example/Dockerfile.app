@@ -11,8 +11,9 @@ RUN pip install $STATEFUN_WHEEL_FILE
 COPY requirements.txt /app/
 RUN pip install -r requirements.txt
 
+COPY logging.ini /app/
+COPY shopping_pb2.py /app/
 COPY main.py /app/
-COPY messages_pb2.py /app/
 
 EXPOSE 8000
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "-w 4", "main:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "-w 4", "--log-config", "logging.ini", "main:app"]

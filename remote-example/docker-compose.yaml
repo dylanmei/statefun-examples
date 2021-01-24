@@ -8,7 +8,7 @@ services:
     - "2181:2181"
     logging:
       driver: none
-
+ 
   kafka-broker:
     image: confluentinc/cp-kafka:6.0.1
     ports:
@@ -38,6 +38,11 @@ services:
     environment:
       ROLE: master
       MASTER_HOST: jobmanager
+    #command:
+    #  - "--fromSavepoint"
+    #  - "/tmp/shopping.state"
+    volumes:
+      - "/tmp:/tmp"
     expose:
     - "6123"
     ports:
@@ -46,6 +51,8 @@ services:
     - "kafka-broker:kafka-broker"
     depends_on:
     - kafka-broker
+    logging:
+      driver: none
 
   taskmanager:
     build:

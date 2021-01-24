@@ -5,51 +5,58 @@ import threading
 import random
 
 from kafka.errors import NoBrokersAvailable
-from messages_pb2 import Restock, Purchase, SupplyChanged
+from shopping_pb2 import Supply, Basket
 from beautifultable import BeautifulTable
+from pluralizer import Pluralizer
 
 from kafka import KafkaProducer
 from kafka import KafkaConsumer
 
 KAFKA_ADDR = "localhost:9092"
-PRODUCT_LIST = ["👞️Shoes", "🧥️Coat", "🎒️Backpack", "👛️Purse", "🎩️Hat", "⌚️Watch", "👖️Pants", "🌂️Umbrella", "🍫️Chocolate"]
+PRODUCTS = {'👞️': "Shoes", '🧥️': "Coat", '🎒️': "Backpack", '👛️': "Purse", '🎩️': "Hat", '⌚️': "Watch", '👖️': "Pants", '🌂️': "Umbrella"}
 DELAY_SECONDS = 5
+pluralizer = Pluralizer()
+
 
 def produce_restock_messages():
     producer = KafkaProducer(bootstrap_servers=[KAFKA_ADDR])
 
     for message in generate_restock_messages():
-        print(f"{message.id[0]} Restocking {message.id[1:]} ({message.quantity})")
+        print(f"{icon_of(message.id)} Restocking {pluralizer.pluralize(message.id, message.quantity, True)}...")
         key = message.id.encode('utf-8')
         val = message.SerializeToString()
         producer.send(topic='restock', key=key, value=val)
         producer.flush()
         time.sleep(DELAY_SECONDS)
 
+
 def generate_restock_messages():
     """Generate infinite sequence of random Restock messages."""
     while True:
-        message = Restock()
-        message.id = random.choice(PRODUCT_LIST)
+        message = Supply.Restock()
+        message.id = random.choice(list(PRODUCTS.values()))
         message.quantity = int(random.triangular(1, 5.5, 5))
         yield message
 
-def produce_purchase_messages():
+
+def produce_add_to_basket_messages():
     producer = KafkaProducer(bootstrap_servers=[KAFKA_ADDR])
 
-    for message in generate_purchase_messages():
-        print(f"{message.id[0]} Purchasing {message.id[1:]} ({message.quantity})")
+    for message in generate_add_to_basket_messages():
+        print(f"{icon_of(message.product_id)} Adding {pluralizer.pluralize(message.product_id, message.quantity, True)} to {message.id}'s shopping basket...")
         key = message.id.encode('utf-8')
         val = message.SerializeToString()
-        producer.send(topic='purchase', key=key, value=val)
+        producer.send(topic='add-to-basket', key=key, value=val)
         producer.flush()
         time.sleep(DELAY_SECONDS)
 
-def generate_purchase_messages():
+
+def generate_add_to_basket_messages():
     """Generate infinite sequence of random Purchase messages."""
     while True:
-        message = Purchase()
-        message.id = random.choice(PRODUCT_LIST)
+        message = Basket.Add()
+        message.id = "Dylan"
+        message.product_id = random.choice(list(PRODUCTS.values()))
         message.quantity = int(random.triangular(1, 5.5, 1))
         yield message
 
@@ -76,18 +83,19 @@ def consume_supply_events():
 
 def format_supply_events(consumer):
     for message in consumer:
-        event = SupplyChanged()
+        event = Supply.Changed()
         event.ParseFromString(message.value)
+        sign = '˖' if event.difference > 0 else ''
         yield [
-            event.id[:1],
-            event.id[1:],
+            icon_of(event.id),
+            event.id,
             event.total_quantity,
-            event.difference
+            f'{sign}{event.difference}'
         ]
 
 
-def term_handler(number, frame):
-    sys.exit(0)
+def icon_of(name):
+    return next((icon for icon, item in PRODUCTS.items() if name == item), None)
 
 
 def safe_loop(fn):
@@ -104,9 +112,14 @@ def safe_loop(fn):
             print(e)
             return
 
+def term_handler(number, frame):
+    sys.exit(0)
+
+
 def usage(exit_code):
     print("harness.py [restock|purchase|print-supply]")
     sys.exit(exit_code)
+
 
 def main(arg):
     signal.signal(signal.SIGTERM, term_handler)
@@ -115,29 +128,20 @@ def main(arg):
         producer = threading.Thread(target=safe_loop, args=[produce_restock_messages])
         producer.start()
         producer.join()
-    elif arg == "purchase":
-        producer = threading.Thread(target=safe_loop, args=[produce_purchase_messages])
+    elif arg == "add-to-basket":
+        producer = threading.Thread(target=safe_loop, args=[produce_add_to_basket_messages])
         producer.start()
         producer.join()
-    elif arg == "both":
-        restock_producer = threading.Thread(target=safe_loop, args=[produce_restock_messages])
-        restock_producer.start()
-
-        purchase_producer = threading.Thread(target=safe_loop, args=[produce_purchase_messages])
-        purchase_producer.start()
-
-        restock_producer.join()
-        purchase_producer.join()
-
     elif arg == "print-supply":
         consumer = threading.Thread(target=safe_loop, args=[consume_supply_events])
         consumer.start()
         consumer.join()
 
+
 if __name__ == "__main__":
     args = sys.argv[1:]
     if len(args) == 0:
         usage(0)
-    if args[0] not in ["restock", "purchase", "both", "print-supply"]:
+    if args[0] not in ["restock", "add-to-basket", "print-supply"]:
         usage(1)
     main(args[0])

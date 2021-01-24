@@ -7,13 +7,23 @@ module:
     - function:
         meta:
           kind: http
-          type: shopping/product
+          type: shopping/supply
         spec:
           endpoint: http://app:8000/statefun
           states:
           - supply
-          maxNumBatchRequests: 500
-          timeout: 2min
+          maxNumBatchRequests: 100
+          timeout: 1min
+    - function:
+        meta:
+          kind: http
+          type: shopping/basket
+        spec:
+          endpoint: http://app:8000/statefun
+          states:
+          - basket
+          maxNumBatchRequests: 100
+          timeout: 1min
     ingresses:
     - ingress:
         meta:
@@ -24,21 +34,21 @@ module:
           consumerGroupId: remote-example
           topics:
           - topic: restock
-            typeUrl: com.googleapis/shopping.Restock
+            typeUrl: com.googleapis/shopping.protocols.Supply.Restock
             targets:
-            - shopping/product
+            - shopping/supply
     - ingress:
         meta:
           type: statefun.kafka.io/routable-protobuf-ingress
-          id: shopping/purchase
+          id: shopping/add-to-basket
         spec:
           address: kafka-broker:19092
           consumerGroupId: remote-example
           topics:
-          - topic: purchase
-            typeUrl: com.googleapis/shopping.Purchase
+          - topic: add-to-basket
+            typeUrl: com.googleapis/shopping.protocols.Basket.Add
             targets:
-            - shopping/product
+            - shopping/basket
     egresses:
     - egress:
         meta:

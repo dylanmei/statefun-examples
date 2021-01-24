@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package shopping.protocols;
+
+enum Availability {
+    IN_STOCK = 0;
+    OUT_OF_STOCK = 1;
+}
+
+message Supply {
+    message Restock {
+        string id = 1;
+        int32 quantity = 2;
+    }
+
+    message Request {
+        string id = 1;
+        int32 quantity = 2;
+    }
+
+    message Received {
+        string id = 1;
+        int32 quantity = 2;
+        Availability status = 3;
+    }
+
+    message Changed {
+        string id = 1;
+        int32 total_quantity = 2;
+        int32 difference = 3;
+    }
+
+    int32 quantity = 1;
+}
+
+message Basket {
+    message Add {
+        string id = 1;
+        string product_id = 2;
+        int32 quantity = 3;
+    }
+
+    message Item {
+      string id = 1;
+      int32 quantity = 2;
+    }
+
+    repeated Item items = 1;
+}
