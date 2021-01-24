@@ -4,7 +4,7 @@ from statefun import StatefulFunctions
 from statefun import RequestReplyHandler
 from statefun import kafka_egress_record
 
-from shopping_pb2 import Supply, Basket
+from shopping_pb2 import Supply, Basket, Availability
 from google.protobuf.any_pb2 import Any
 from pluralizer import Pluralizer
 
@@ -52,10 +52,10 @@ def supply(context, message: typing.Union[Supply.Restock, Supply.Request]):
         if current_quantity - message.quantity < 0:
             # We don't have enough availability
             received.quantity = 0
-            received.status = Supply.Availability.OUT_OF_STOCK
+            received.status = Availability.OUT_OF_STOCK
         else:
             received.quantity = message.quantity
-            received.status = Supply.Availability.IN_STOCK
+            received.status = Availability.IN_STOCK
 
             # Update our supply
             state.quantity -= message.quantity
@@ -88,8 +88,8 @@ def supply(context, message: typing.Union[Basket.Add, Supply.Received]):
         context.pack_and_send("shopping/supply", message.product_id, request)
 
     elif type(message) is Supply.Received:
-        if message.status == Supply.Availability.OUT_OF_STOCK:
-            app.logger.debug(f"{context.address.typename()} OUT OF STOCK! Not enough {pluralizer.plural(message.id)} available")
+        if message.status == Availability.OUT_OF_STOCK:
+            app.logger.warn(f"{context.address.typename()} OUT OF STOCK! Not enough {pluralizer.plural(message.id)} available")
         else:
             app.logger.debug(f"{context.address.typename()} Received {pluralizer.pluralize(message.id, message.quantity, True)}")
             state = context.state('basket').unpack(Basket)
