@@ -13,7 +13,7 @@ import java.lang.invoke.MethodHandles
 
 class SupplyFun : StatefulFunction {
     companion object {
-        val TYPE = FunctionType("example", "supply")
+        val TYPE = FunctionType(ModuleIO.FUNCTION_NAMESPACE, "supply")
         val log: Logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass())
     }
 
@@ -28,12 +28,11 @@ class SupplyFun : StatefulFunction {
                 supply.set(quantity)
 
                 // Emit a change event
-                context.send(ModuleIO.SUPPLY_CHANGED_EGRESS_ID,
-                    Supply.Changed.newBuilder()
-                        .setId(input.id)
-                        .setTotalQuantity(quantity)
-                        .setDifference(input.quantity)
-                        .build()
+                context.send(ModuleIO.SUPPLY_CHANGED_EGRESS_ID, Supply.Changed.newBuilder()
+                    .setId(input.id)
+                    .setTotalQuantity(quantity)
+                    .setDifference(input.quantity)
+                    .build()
                 )
             }
             is Supply.Request -> {
@@ -41,33 +40,30 @@ class SupplyFun : StatefulFunction {
                 val quantity = supply.getOrDefault(0) - input.quantity
                 if (quantity < 0) {
                     // Not enough availability to fulfil the request
-                    context.send(context.caller(),
-                        Supply.Received.newBuilder()
-                            .setId(input.id)
-                            .setQuantity(0)
-                            .setStatus(Supply.Availability.OUT_OF_STOCK)
-                            .build()
+                    context.send(context.caller(), Supply.Received.newBuilder()
+                        .setId(input.id)
+                        .setQuantity(0)
+                        .setStatus(Availability.OUT_OF_STOCK)
+                        .build()
                     )
                 }
                 else {
                     // Update our stock
                     supply.set(quantity)
 
-                    context.send(context.caller(),
-                        Supply.Received.newBuilder()
-                            .setId(input.id)
-                            .setQuantity(input.quantity)
-                            .setStatus(Supply.Availability.IN_STOCK)
-                            .build()
+                    context.send(context.caller(), Supply.Received.newBuilder()
+                        .setId(input.id)
+                        .setQuantity(input.quantity)
+                        .setStatus(Availability.IN_STOCK)
+                        .build()
                     )
 
                     // Emit a change event
-                    context.send(ModuleIO.SUPPLY_CHANGED_EGRESS_ID,
-                        Supply.Changed.newBuilder()
-                            .setId(input.id)
-                            .setTotalQuantity(quantity)
-                            .setDifference(-input.quantity)
-                            .build()
+                    context.send(ModuleIO.SUPPLY_CHANGED_EGRESS_ID, Supply.Changed.newBuilder()
+                        .setId(input.id)
+                        .setTotalQuantity(quantity)
+                        .setDifference(-input.quantity)
+                        .build()
                     )
                 }
             }

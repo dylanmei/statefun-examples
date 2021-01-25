@@ -22,6 +22,7 @@ object Harness {
             withSupplyingIngress(ModuleIO.RESTOCK_INGRESS_ID, RestockGenerator(5000))
             withSupplyingIngress(ModuleIO.ADD_TO_BASKET_INGRESS_ID, AddToBasketGenerator(5000))
             withConsumingEgress(ModuleIO.SUPPLY_CHANGED_EGRESS_ID, SupplyChangedPrinter())
+            withConsumingEgress(ModuleIO.BASKET_SNAPSHOTS_EGRESS_ID, BasketSnapshotPrinter())
 
             config.forEach { (key, value) ->
                 withGlobalConfiguration(key, value)

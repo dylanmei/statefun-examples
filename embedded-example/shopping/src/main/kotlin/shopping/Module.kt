@@ -26,6 +26,7 @@ class Module : StatefulFunctionModule {
 
         // Bind egress to emit events or objects
         binder.bindEgress(mio.supplyChangedEgressSpec)
+        binder.bindEgress(mio.basketSnapshotsEgressSpec)
 
         // Bind a function provider to a function type
         binder.bindFunctionProvider(SupplyFun.TYPE) {

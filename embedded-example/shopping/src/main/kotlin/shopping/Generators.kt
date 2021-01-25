@@ -39,6 +39,7 @@ abstract class Generator<T>(val intervalMs: Long) : SerializableSupplier<T> {
 
     companion object {
         val sourceUsers = arrayOf("Dylan")
-        val sourceProducts = arrayOf("Shoes", "Coat", "Backpack", "Purse", "Hat", "Watch", "Pants")
+        val sourceProducts = arrayOf("Shoes", "Coat", "Backpack", "Purse", "Hat", "Watch", "Pants", "Umbrella")
+        //val sourceProducts = arrayOf("Shoes", "Backpack", "Pants")
     }
 }

@@ -5,11 +5,12 @@ package shopping.protocols;
 option java_package = "shopping.protocols.generated";
 option java_multiple_files = true;
 
+enum Availability {
+    IN_STOCK = 0;
+    OUT_OF_STOCK = 1;
+}
+
 message Supply {
-    enum Availability {
-        IN_STOCK = 0;
-        OUT_OF_STOCK = 1;
-    }
     message Restock {
         string id = 1;
         int32 quantity = 2;
@@ -38,5 +39,15 @@ message Basket {
         string id = 1;
         string product_id = 2;
         int32 quantity = 3;
+    }
+
+    message Snapshot {
+        message Item {
+            string id = 1;
+            int32 quantity = 2;
+        }
+
+        string id = 1;
+        repeated Item items = 2;
     }
 }

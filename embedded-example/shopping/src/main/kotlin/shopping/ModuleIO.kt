@@ -25,6 +25,10 @@ class ModuleIO(val config: Map<String, String>) {
         val SUPPLY_CHANGED_EGRESS_ID = EgressIdentifier(
             FUNCTION_NAMESPACE, "supply-changed", Supply.Changed::class.java
         )
+
+        val BASKET_SNAPSHOTS_EGRESS_ID = EgressIdentifier(
+            FUNCTION_NAMESPACE, "basket-snapshots", Basket.Snapshot::class.java
+        )
     }
 
     val restockIngressSpec: IngressSpec<Supply.Restock>
@@ -47,5 +51,11 @@ class ModuleIO(val config: Map<String, String>) {
         get() = KafkaEgressBuilder.forIdentifier(SUPPLY_CHANGED_EGRESS_ID)
             .withKafkaAddress(config["kafka.bootstrap.servers"])
             .withSerializer(SupplyChangedSerializer::class.java)
+            .build()
+
+    val basketSnapshotsEgressSpec: EgressSpec<Basket.Snapshot>
+        get() = KafkaEgressBuilder.forIdentifier(BASKET_SNAPSHOTS_EGRESS_ID)
+            .withKafkaAddress(config["kafka.bootstrap.servers"])
+            .withSerializer(BasketSnapshotSerializer::class.java)
             .build()
 }

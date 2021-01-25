@@ -46,3 +46,15 @@ class SupplyChangedSerializer : KafkaEgressSerializer<Supply.Changed> {
         return ProducerRecord("supply-changed", key, value)
     }
 }
+
+class BasketSnapshotSerializer : KafkaEgressSerializer<Basket.Snapshot> {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+
+    override fun serialize(snapshot: Basket.Snapshot): ProducerRecord<ByteArray, ByteArray> {
+        val key = snapshot.id.toByteArray()
+        val value = snapshot.toByteArray()
+        return ProducerRecord("basket-snapshots", key, value)
+    }
+}
