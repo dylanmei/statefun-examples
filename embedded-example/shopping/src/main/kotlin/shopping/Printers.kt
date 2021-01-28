@@ -5,6 +5,7 @@ import shopping.protocols.generated.Supply
 import org.apache.flink.statefun.flink.harness.io.SerializableConsumer
 
 import de.vandermeer.asciitable.*
+import de.vandermeer.asciithemes.a8.A8_Grids
 import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment
 
 class SupplyChangedPrinter : SerializableConsumer<Supply.Changed> {
@@ -62,13 +63,15 @@ class SupplyChangedPrinter : SerializableConsumer<Supply.Changed> {
 class BasketSnapshotPrinter : SerializableConsumer<Basket.Snapshot> {
     override fun accept(snapshot: Basket.Snapshot) {
         newTable().run {
-            addRule()
+            addHeavyRule()
             newHeader(this, snapshot.id)
             snapshot.itemsList.forEach {
-                addRule()
+                addLightRule()
                 newRow(this, it)
             }
-            addRule()
+            addLightRule()
+            context.grid = A8_Grids.lineDoubleBlocks()
+            println()
             println(render(100))
         }
     }
@@ -86,7 +89,7 @@ class BasketSnapshotPrinter : SerializableConsumer<Basket.Snapshot> {
         "${id}'s BASKET SNAPSHOT",
         "Qty",
     ).apply {
-        cells[2].context.textAlignment = TextAlignment.CENTER
+        cells[2].context.textAlignment = TextAlignment.RIGHT
     }
 
     fun newRow(table: AsciiTable, item: Basket.Snapshot.Item) = table.addRow(

@@ -3,43 +3,59 @@ package shopping
 import shopping.protocols.generated.Basket
 import shopping.protocols.generated.Supply
 import org.apache.flink.statefun.flink.harness.io.SerializableSupplier
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.lang.invoke.MethodHandles
 
-class RestockGenerator(intervalMs: Long)
-    : Generator<Supply.Restock>(intervalMs)
+class RestockGenerator
+    : SerializableSupplier<Supply.Restock>
 {
-    override fun generate() = Supply.Restock.newBuilder()
-        .setId(sourceProducts.random())
-        .setQuantity(arrayOf(1, 1, 1, 1, 2, 2, 3).random())
-        .build()
+    val supplies = sourceProducts.map {
+        Supply.Restock.newBuilder()
+            .setId(it)
+            .setQuantity(5)
+            .build()
+    }.toMutableList()
+
+    fun done() = supplies.isEmpty()
+
+    override fun get(): Supply.Restock {
+        if (done()) {
+            log.debug("Nothing more to generate. Sleeping for 10m...")
+            Thread.sleep(600000)
+        }
+        return supplies.removeAt(0)
+    }
+
+    companion object {
+        val sourceProducts = arrayOf("Shoes", "Coat", "Backpack", "Purse", "Hat", "Watch", "Pants", "Umbrella")
+        val log: Logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass())
+    }
 }
 
-class AddToBasketGenerator(intervalMs: Long)
-    : Generator<Basket.Add>(intervalMs)
+class AddToBasketGenerator(val initialWaitMs: Long, val intervalMs: Long)
+    : SerializableSupplier<Basket.Add>
 {
-    override fun generate() = Basket.Add.newBuilder()
-        .setId(sourceUsers.random())
-        .setProductId(sourceProducts.random())
-        .setQuantity(arrayOf(1, 1, 1, 1, 1, 1, 2).random())
-        .build()
-}
-
-abstract class Generator<T>(val intervalMs: Long) : SerializableSupplier<T> {
     private var alreadyRunning = false
 
-    abstract fun generate(): T
-
-    override fun get(): T {
+    override fun get(): Basket.Add {
         if (alreadyRunning) {
             Thread.sleep(intervalMs)
+        } else {
+            Thread.sleep(initialWaitMs)
         }
-        return generate().also {
-            alreadyRunning = true
-        }
+
+        return Basket.Add.newBuilder()
+            .setId(sourceUsers.random())
+            .setProductId(RestockGenerator.sourceProducts.random())
+            .setQuantity(arrayOf(1, 1, 1, 1, 1, 2, 2, 3).random())
+            .build()
+            .also {
+                alreadyRunning = true
+            }
     }
 
     companion object {
         val sourceUsers = arrayOf("Dylan")
-        val sourceProducts = arrayOf("Shoes", "Coat", "Backpack", "Purse", "Hat", "Watch", "Pants", "Umbrella")
-        //val sourceProducts = arrayOf("Shoes", "Backpack", "Pants")
     }
 }

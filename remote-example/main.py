@@ -14,7 +14,7 @@ pluralizer = Pluralizer()
 @functions.bind("shopping/supply")
 def supply(context, message: typing.Union[Supply.Restock, Supply.Request]):
     if type(message) is Supply.Restock:
-        app.logger.debug(f"{context.address.typename()} Adding {pluralizer.pluralize(message.id, message.quantity, True)} to our supply")
+        app.logger.debug(f"{context.address.typename()} Adding {pluralizer.pluralize(message.id, message.quantity, True)}")
 
         quantity_to_change = message.quantity
         state = context.state('supply').unpack(Supply)

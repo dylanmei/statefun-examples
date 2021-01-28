@@ -20,23 +20,16 @@ pluralizer = Pluralizer()
 
 def produce_restock_messages():
     producer = KafkaProducer(bootstrap_servers=[KAFKA_ADDR])
+    for icon, name in PRODUCTS.items():
+        message = Supply.Restock()
+        message.id = name
+        message.quantity = 10
 
-    for message in generate_restock_messages():
-        print(f"{icon_of(message.id)} Restocking {pluralizer.pluralize(message.id, message.quantity, True)}...")
+        print(f"{icon_of(message.id)} Restocking {pluralizer.pluralize(message.id, message.quantity, True)}.")
         key = message.id.encode('utf-8')
         val = message.SerializeToString()
         producer.send(topic='restock', key=key, value=val)
-        producer.flush()
-        time.sleep(DELAY_SECONDS)
-
-
-def generate_restock_messages():
-    """Generate infinite sequence of random Restock messages."""
-    while True:
-        message = Supply.Restock()
-        message.id = random.choice(list(PRODUCTS.values()))
-        message.quantity = int(random.triangular(1, 5.5, 5))
-        yield message
+    producer.flush()
 
 
 def produce_add_to_basket_messages():
@@ -98,10 +91,12 @@ def icon_of(name):
     return next((icon for icon, item in PRODUCTS.items() if name == item), None)
 
 
-def safe_loop(fn):
+def safe_loop(fn, run_once=False):
     while True:
         try:
             fn()
+            if run_once:
+                return
         except SystemExit:
             print("Good bye!")
             return
@@ -125,7 +120,7 @@ def main(arg):
     signal.signal(signal.SIGTERM, term_handler)
 
     if arg == "restock":
-        producer = threading.Thread(target=safe_loop, args=[produce_restock_messages])
+        producer = threading.Thread(target=safe_loop, args=[produce_restock_messages, True])
         producer.start()
         producer.join()
     elif arg == "add-to-basket":
