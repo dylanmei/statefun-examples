@@ -3,27 +3,6 @@ module:
   meta:
     type: remote
   spec:
-    functions:
-    - function:
-        meta:
-          kind: http
-          type: shopping/supply
-        spec:
-          endpoint: http://app:8000/statefun
-          states:
-          - supply
-          maxNumBatchRequests: 100
-          timeout: 1min
-    - function:
-        meta:
-          kind: http
-          type: shopping/basket
-        spec:
-          endpoint: http://app:8000/statefun
-          states:
-          - basket
-          maxNumBatchRequests: 100
-          timeout: 1min
     ingresses:
     - ingress:
         meta:
@@ -49,6 +28,27 @@ module:
             typeUrl: com.googleapis/shopping.protocols.Basket.Add
             targets:
             - shopping/basket
+    functions:
+    - function:
+        meta:
+          kind: http
+          type: shopping/supply
+        spec:
+          endpoint: http://app:8000/statefun
+          states:
+          - supply
+          maxNumBatchRequests: 100
+          timeout: 1min
+    - function:
+        meta:
+          kind: http
+          type: shopping/basket
+        spec:
+          endpoint: http://app:8000/statefun
+          states:
+          - basket
+          maxNumBatchRequests: 100
+          timeout: 1min
     egresses:
     - egress:
         meta:
