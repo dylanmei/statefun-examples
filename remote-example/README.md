@@ -23,6 +23,7 @@ Run the function and the accompanying Flink cluster: `docker-compose up`. _If th
 
 Now we have our Flink statefun function running, but we don't have any state. We'll use `harness.py` to create and interact with our `supply` data.
 - Install a few requirements: `pip3 install beautifultable pluralizer`
-- In a new shell, run `python3 harness.py print-supply` to show a live-feed of changes to our supply of products.
 - In a new shell, run `python3 harness.py restock` to add to our supply of products.
 - In a new shell, run `python3 harness.py add-to-basket` to take from our supply of products.
+- In a new shell, run `python3 harness.py print-supply` to show a live-feed of changes to our supply of products.
+- In a new shell, run `python3 harness.py print-baskets` to show a live-feed of the current state of shopping baskets.

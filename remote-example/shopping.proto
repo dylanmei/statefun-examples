@@ -45,5 +45,10 @@ message Basket {
       int32 quantity = 2;
     }
 
+    message Snapshot {
+      string id = 1;
+      repeated Item items = 2;
+    }
+
     repeated Item items = 1;
 }

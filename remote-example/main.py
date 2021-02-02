@@ -67,7 +67,7 @@ def supply(context, message: typing.Union[Supply.Restock, Supply.Request]):
             event.total_quantity = state.quantity
             event.difference = -message.quantity
 
-            egress_message = kafka_egress_record(topic="supply-changed", key=message.id, value=event)
+            egress_message = kafka_egress_record(topic="supply-changed", key=event.id, value=event)
             context.pack_and_send_egress("shopping/supply-changed", egress_message)
 
         # Reply to the requestor
@@ -106,6 +106,15 @@ def supply(context, message: typing.Union[Basket.Add, Supply.Received]):
                 state.items.append(item)
 
             context.state('basket').pack(state)
+
+            snapshot = Basket.Snapshot()
+            snapshot.id = context.address.identity
+            for item in state.items:
+                snapshot.items.append(item)
+
+            egress_message = kafka_egress_record(topic="basket-snapshots", key=snapshot.id, value=snapshot)
+            context.pack_and_send_egress("shopping/basket-snapshots", egress_message)
+
     else:
         raise TypeError(f'Unexpected message type {type(message)}')
 

@@ -59,3 +59,12 @@ module:
           deliverySemantic:
             type: exactly-once
             transactionTimeoutMillis: 100000
+    - egress:
+        meta:
+          type: statefun.kafka.io/generic-egress
+          id: shopping/basket-snapshots
+        spec:
+          address: kafka-broker:19092
+          deliverySemantic:
+            type: exactly-once
+            transactionTimeoutMillis: 100000

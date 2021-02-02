@@ -87,6 +87,30 @@ def format_supply_events(consumer):
         ]
 
 
+def consume_basket_snapshots():
+    consumer = KafkaConsumer(
+        'basket-snapshots',
+        bootstrap_servers=[KAFKA_ADDR],
+        auto_offset_reset='earliest',
+        group_id='event-consumer')
+
+    for message in consumer:
+        snapshot = Basket.Snapshot()
+        snapshot.ParseFromString(message.value)
+        label = f"{snapshot.id}'s BASKET SNAPSHOT"
+
+        table = BeautifulTable()
+        table.set_style(BeautifulTable.STYLE_BOX)
+        table.columns.header = [
+            "   ", label, "Qty"
+        ]
+        table.columns.alignment[label] = BeautifulTable.ALIGN_LEFT
+        table.columns.alignment["Qty"] = BeautifulTable.ALIGN_RIGHT
+        for item in snapshot.items:
+            table.rows.append([icon_of(item.id), item.id, item.quantity])
+        print(table)
+
+
 def icon_of(name):
     return next((icon for icon, item in PRODUCTS.items() if name == item), None)
 
@@ -112,7 +136,7 @@ def term_handler(number, frame):
 
 
 def usage(exit_code):
-    print("harness.py [restock|purchase|print-supply]")
+    print("harness.py [restock|purchase|print-supply|print-baskets]")
     sys.exit(exit_code)
 
 
@@ -131,12 +155,16 @@ def main(arg):
         consumer = threading.Thread(target=safe_loop, args=[consume_supply_events])
         consumer.start()
         consumer.join()
+    elif arg == "print-baskets":
+        consumer = threading.Thread(target=safe_loop, args=[consume_basket_snapshots])
+        consumer.start()
+        consumer.join()
 
 
 if __name__ == "__main__":
     args = sys.argv[1:]
     if len(args) == 0:
         usage(0)
-    if args[0] not in ["restock", "add-to-basket", "print-supply"]:
+    if args[0] not in ["restock", "add-to-basket", "print-supply", "print-baskets"]:
         usage(1)
     main(args[0])
