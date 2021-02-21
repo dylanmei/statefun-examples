@@ -1,0 +1,29 @@
+plugins {
+    id 'java-library'
+    id 'com.google.protobuf' version "0.8.14"
+}
+
+apply plugin: 'idea'
+
+dependencies {
+    compile "com.google.protobuf:protobuf-java:$protobufVersion"
+}
+
+protobuf {
+    protoc {
+        // The artifact spec for the Protobuf Compiler
+        artifact = "com.google.protobuf:protoc:$protobufVersion"
+    }
+
+    generatedFilesBaseDir = "$projectDir/src/generated"
+    clean {
+        delete protobuf.generatedFilesBaseDir
+    }
+}
+
+idea {
+    module {
+        sourceDirs += file("$projectDir/src/generated/main/java")
+        generatedSourceDirs += file("$projectDir/src/generated/main/java")
+    }
+}

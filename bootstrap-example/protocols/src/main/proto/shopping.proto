@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package shopping.protocols;
+
+option java_package = "shopping.protocols.generated";
+option java_multiple_files = true;
+
+message Supply {
+  int32 quantity = 1;
+}
+
+message Basket {
+    message Item {
+      string id = 1;
+      int32 quantity = 2;
+    }
+
+    repeated Item items = 1;
+}

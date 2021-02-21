@@ -41,8 +41,9 @@ services:
     #command:
     #  - "--fromSavepoint"
     #  - "/tmp/shopping.state"
-    volumes:
-      - "/tmp:/tmp"
+    #volumes:
+    #  - "/tmp/shopping.state:/tmp/shopping.state"
+    #  - "../bootstrap-example/protocols/build/libs/protocols.jar:/opt/flink/lib/protocols.jar"
     expose:
     - "6123"
     ports:

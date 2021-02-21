@@ -1,35 +1,14 @@
 plugins {
-    id 'application'
-    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion" apply false
+    id "org.jetbrains.kotlin.kapt" version "$kotlinVersion" apply false
 }
 
-apply plugin: 'idea'
-apply plugin: 'kotlin'
-
-archivesBaseName = 'bootstrap'
-mainClassName = 'shopping.StateBootstrap'
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
-
-repositories {
-    jcenter()
+allprojects {
+    group 'bootstrap-example'
 }
 
-dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib'
-
-    compile "com.google.protobuf:protobuf-java:$protobufVersion"
-    compile "com.google.protobuf:protobuf-java-util:$protobufVersion"
-    compile "org.apache.flink:statefun-sdk:$statefunVersion"
-    compile "org.apache.flink:statefun-flink-harness:$statefunVersion"
-    compile "org.apache.flink:statefun-flink-state-processor:$statefunVersion"
-    compile "org.apache.flink:flink-state-processor-api_2.12:$flinkVersion"
-    compile "org.apache.flink:flink-statebackend-rocksdb_2.12:$flinkVersion"
-
-    compile "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
-    compile "org.slf4j:slf4j-api:1.7.28"
-}
-
-run {
-    applicationDefaultJvmArgs = ["-Dlog4j2.configurationFile=log4j2.properties"]
+subprojects {
+    repositories {
+        jcenter()
+    }
 }
