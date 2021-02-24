@@ -78,7 +78,7 @@ def supply(context, message: typing.Union[Supply.Restock, Supply.Request]):
 
 
 @functions.bind("shopping/basket")
-def supply(context, message: typing.Union[Basket.Add, Supply.Received]):
+def basket(context, message: typing.Union[Basket.Add, Supply.Received]):
 
     if type(message) is Basket.Add:
         request = Supply.Request()
