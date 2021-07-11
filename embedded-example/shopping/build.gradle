@@ -25,23 +25,23 @@ configurations {
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib'
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion"
 
-    compile project(':protocols')
-    implementation 'de.vandermeer:asciitable:0.3.2'
+    implementation project(':protocols')
+    implementation "de.vandermeer:asciitable:0.3.2"
 
     provided "com.google.protobuf:protobuf-java:$protobufVersion"
     provided "com.google.protobuf:protobuf-java-util:$protobufVersion"
-    provided "org.apache.flink:statefun-sdk:$statefunVersion"
+    provided "org.apache.flink:statefun-sdk-java:$statefunVersion"
     provided "org.apache.flink:statefun-flink-harness:$statefunVersion"
 
     provided "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
     provided "org.slf4j:slf4j-api:1.7.28"
 
-    compile 'com.google.auto.service:auto-service-annotations:1.0-rc6'
-    kapt 'com.google.auto.service:auto-service:1.0-rc6'
+    compileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
+    kapt "com.google.auto.service:auto-service:1.0-rc6"
 
     statefunLib "org.apache.flink:statefun-flink-distribution:$statefunVersion"
 }
@@ -66,7 +66,7 @@ run {
 }
 
 jib {
-    from.image = "flink:1.11.3-java11"
+    from.image = "flink:${flinkVersion}-java11"
     to.image = "statefun-shopping"
 
     containerizingMode = 'packaged'

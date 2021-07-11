@@ -6,7 +6,7 @@ plugins {
 apply plugin: 'idea'
 
 dependencies {
-    compile "com.google.protobuf:protobuf-java:$protobufVersion"
+    compileOnly "com.google.protobuf:protobuf-java:$protobufVersion"
 }
 
 protobuf {

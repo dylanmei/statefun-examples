@@ -2,121 +2,149 @@ import typing
 
 from statefun import StatefulFunctions
 from statefun import RequestReplyHandler
-from statefun import kafka_egress_record
+from statefun import message_builder, kafka_egress_message
+from statefun import Message
+from statefun import ValueSpec
 
-from shopping_pb2 import Supply, Basket, Availability
-from google.protobuf.any_pb2 import Any
+from shopping_types import *
+from shopping_pb2 import Availability, Basket, Supply
 from pluralizer import Pluralizer
 
 functions = StatefulFunctions()
 pluralizer = Pluralizer()
 
-@functions.bind("shopping/supply")
-def supply(context, message: typing.Union[Supply.Restock, Supply.Request]):
-    if type(message) is Supply.Restock:
-        app.logger.debug(f"{context.address.typename()} Adding {pluralizer.pluralize(message.id, message.quantity, True)}")
-
-        quantity_to_change = message.quantity
-        state = context.state('supply').unpack(Supply)
-        if not state:
-            state = Supply()
-            state.quantity = quantity_to_change
-        else:
-            state.quantity += quantity_to_change
+@functions.bind("shopping/supply", specs=[ValueSpec(name="supply", type=SUPPLY_TYPE)])
+def supply(context, message: Message):
+    if message.is_type(SUPPLY_RESTOCK_TYPE):
+        restock = message.as_type(SUPPLY_RESTOCK_TYPE)
+        app.logger.debug(f"{context.address.typename} " +
+            f"Adding {pluralizer.pluralize(restock.id, restock.quantity, True)}")
 
         # Update our supply
-        context.state('supply').pack(state)
+        supply = context.storage.supply
+        quantity_to_change = restock.quantity
+
+        if not supply:
+            supply = Supply()
+            supply.quantity = quantity_to_change
+            context.storage.supply = supply
+        else:
+            supply.quantity += quantity_to_change
 
         # Record the change event
         event = Supply.Changed()
-        event.id = message.id
-        event.total_quantity = state.quantity
+        event.id = restock.id
+        event.total_quantity = supply.quantity
         event.difference = quantity_to_change
 
-        egress_message = kafka_egress_record(topic="supply-changed", key=message.id, value=event)
-        context.pack_and_send_egress("shopping/supply-changed", egress_message)
+        context.send_egress(
+            kafka_egress_message(
+                typename="shopping/supply-changed",
+                topic="supply-changed",
+                key=event.id,
+                value=event,
+                value_type=SUPPLY_CHANGED_TYPE))
 
-    elif type(message) is Supply.Request:
-        app.logger.debug(f"{context.address.typename()} {context.caller.identity} is requesting {pluralizer.pluralize(message.id, message.quantity, True)}")
-
-        state = context.state('supply').unpack(Supply)
-        if not state:
-            current_quantity = 0
-        else:
-            current_quantity = state.quantity
+    elif message.is_type(SUPPLY_REQUEST_TYPE):
+        request = message.as_type(SUPPLY_REQUEST_TYPE)
+        app.logger.debug(f"{context.address.typename} " +
+            f"{context.caller.id} is requesting {pluralizer.pluralize(request.id, request.quantity, True)}")
 
         # Prepare a reply to the request for items
+        supply = context.storage.supply
         received = Supply.Received()
-        received.id = message.id
+        received.id = request.id
 
-        if current_quantity - message.quantity < 0:
+        if not supply or supply.quantity - request.quantity < 0:
             # We don't have enough availability
             received.quantity = 0
             received.status = Availability.OUT_OF_STOCK
         else:
-            received.quantity = message.quantity
+            received.quantity = request.quantity
             received.status = Availability.IN_STOCK
 
             # Update our supply
-            state.quantity -= message.quantity
-            context.state('supply').pack(state)
+            supply.quantity -= request.quantity
 
             # Record the change event
             event = Supply.Changed()
-            event.id = message.id
-            event.total_quantity = state.quantity
-            event.difference = -message.quantity
+            event.id = request.id
+            event.total_quantity = supply.quantity
+            event.difference = -request.quantity
 
-            egress_message = kafka_egress_record(topic="supply-changed", key=event.id, value=event)
-            context.pack_and_send_egress("shopping/supply-changed", egress_message)
+            context.send_egress(
+                kafka_egress_message(
+                    typename="shopping/supply-changed",
+                    topic="supply-changed",
+                    key=event.id,
+                    value=event,
+                    value_type=SUPPLY_CHANGED_TYPE))
 
-        # Reply to the requestor
-        context.pack_and_reply(received)
+        # Reply to the caller
+        context.send(
+            message_builder(
+                target_typename=context.caller.typename,
+                target_id=context.caller.id,
+                value=received,
+                value_type=SUPPLY_RECEIVED_TYPE))
 
     else:
-        raise TypeError(f'Unexpected message type {type(message)}')
+        raise TypeError(f'Unexpected message type {message.value_typename()}')
 
 
-@functions.bind("shopping/basket")
-def basket(context, message: typing.Union[Basket.Add, Supply.Received]):
+@functions.bind("shopping/basket", specs=[ValueSpec(name="basket", type=BASKET_TYPE)])
+def basket(context, message: Message):
 
-    if type(message) is Basket.Add:
+    if message.is_type(BASKET_ADD_TYPE):
+        add = message.as_type(BASKET_ADD_TYPE)
         request = Supply.Request()
-        request.id = message.product_id
-        request.quantity = message.quantity
+        request.id = add.product_id
+        request.quantity = add.quantity
 
-        context.pack_and_send("shopping/supply", message.product_id, request)
+        context.send(
+            message_builder(
+                target_typename="shopping/supply",
+                target_id=add.product_id,
+                value=request,
+                value_type=SUPPLY_REQUEST_TYPE))
 
-    elif type(message) is Supply.Received:
-        if message.status == Availability.OUT_OF_STOCK:
-            app.logger.warn(f"{context.address.typename()} OUT OF STOCK! Not enough {pluralizer.plural(message.id)} available")
+    elif message.is_type(SUPPLY_RECEIVED_TYPE):
+        received = message.as_type(SUPPLY_RECEIVED_TYPE)
+
+        if received.status == Availability.OUT_OF_STOCK:
+            app.logger.warn(f"{context.address.typename} " +
+                f"OUT OF STOCK! Not enough {pluralizer.plural(received.id)} available")
         else:
-            app.logger.debug(f"{context.address.typename()} Received {pluralizer.pluralize(message.id, message.quantity, True)}")
-            state = context.state('basket').unpack(Basket)
-            if not state:
-                state = Basket()
-            for item in state.items:
-                if item.id == message.id:
-                    item.quantity += message.quantity
-                    break
-            else:
-                item = Basket.Item()
-                item.id = message.id
-                item.quantity = message.quantity
-                state.items.append(item)
+            app.logger.debug(f"{context.address.typename} " +
+                f"Received {pluralizer.pluralize(received.id, received.quantity, True)}")
 
-            context.state('basket').pack(state)
+            basket = context.storage.basket
+            if not basket:
+                basket = Basket()
+                context.storage.basket = basket
+
+            item = next((item for item in basket.items if item.id == received.id), None)
+            if not item:
+                item = Basket.Item()
+                item.id = received.id
+                item.quantity = received.quantity
+                basket.items.append(item)
 
             snapshot = Basket.Snapshot()
-            snapshot.id = context.address.identity
-            for item in state.items:
+            snapshot.id = context.address.id
+            for item in basket.items:
                 snapshot.items.append(item)
 
-            egress_message = kafka_egress_record(topic="basket-snapshots", key=snapshot.id, value=snapshot)
-            context.pack_and_send_egress("shopping/basket-snapshots", egress_message)
+            context.send_egress(
+                kafka_egress_message(
+                    typename="shopping/basket-snapshots",
+                    topic="basket-snapshots",
+                    key=snapshot.id,
+                    value=snapshot,
+                    value_type=BASKET_SNAPSHOT_TYPE))
 
     else:
-        raise TypeError(f'Unexpected message type {type(message)}')
+        raise TypeError(f'Unexpected message type {message.value_typename()}')
 
 
 handler = RequestReplyHandler(functions)
@@ -133,7 +161,7 @@ app = Flask(__name__)
 
 @app.route('/statefun', methods=['POST'])
 def handle():
-    response_data = handler(request.data)
+    response_data = handler.handle_sync(request.data)
     response = make_response(response_data)
     response.headers.set('Content-Type', 'application/octet-stream')
     return response

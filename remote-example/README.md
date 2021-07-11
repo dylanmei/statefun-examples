@@ -9,11 +9,11 @@ While the state is managed by the Flink cluster, the function invocations occur 
 ## walkthrough
 
 First, bring the `apache_flink_statefun` _WHEEL_ into the project. I did this with these steps:
-- Clone the [apache/flink-statefun](https://github.com/apache/flink-statefun/tree/master/statefun-examples) project
-- Check-out the `release-2.2` branch
-- Navigate to the `statefun-python-sdk` directory
+- Clone the [apache/flink-statefun](https://github.com/apache/flink-statefun) project
+- Check-out the `release-3.0` branch
+- Navigate to the `statefun-sdk-python/` directory
 - Run `./build-distribution.sh`
-- Copy `./dist/apache_flink_statefun-2.2_SNAPSHOT-py3-none-any.whl` to this example directory
+- Copy `./dist/apache_flink_statefun-3.0_SNAPSHOT-py3-none-any.whl` to this example directory
 
 Generate the Protobuf objects for Python: `protoc *.proto --python_out=.`
 

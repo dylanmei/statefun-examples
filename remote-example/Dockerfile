@@ -1,6 +1,6 @@
-FROM python:3.7-slim-buster
+FROM python:3.9-slim-buster
 
-ARG STATEFUN_WHEEL_FILE=apache_flink_statefun-2.2_SNAPSHOT-py3-none-any.whl
+ARG STATEFUN_WHEEL_FILE=apache_flink_statefun-3.0_SNAPSHOT-py3-none-any.whl
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -13,6 +13,7 @@ RUN pip install -r requirements.txt
 
 COPY logging.ini /app/
 COPY shopping_pb2.py /app/
+COPY shopping_types.py /app/
 COPY main.py /app/
 
 EXPOSE 8000

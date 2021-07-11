@@ -13,18 +13,18 @@ targetCompatibility = 1.11
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib'
 
-    compile project(':protocols')
+    implementation project(':protocols')
 
-    compile "com.google.protobuf:protobuf-java:$protobufVersion"
-    compile "com.google.protobuf:protobuf-java-util:$protobufVersion"
-    compile "org.apache.flink:statefun-sdk:$statefunVersion"
-    compile "org.apache.flink:statefun-flink-harness:$statefunVersion"
-    compile "org.apache.flink:statefun-flink-state-processor:$statefunVersion"
-    compile "org.apache.flink:flink-state-processor-api_2.12:$flinkVersion"
-    compile "org.apache.flink:flink-statebackend-rocksdb_2.12:$flinkVersion"
+    implementation "com.google.protobuf:protobuf-java:$protobufVersion"
+    implementation "com.google.protobuf:protobuf-java-util:$protobufVersion"
+    implementation "org.apache.flink:statefun-sdk-java:$statefunVersion"
+    implementation "org.apache.flink:statefun-flink-harness:$statefunVersion"
+    implementation "org.apache.flink:statefun-flink-state-processor:$statefunVersion"
+    implementation "org.apache.flink:flink-state-processor-api_2.12:$flinkVersion"
+    implementation "org.apache.flink:flink-statebackend-rocksdb_2.12:$flinkVersion"
 
-    compile "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
-    compile "org.slf4j:slf4j-api:1.7.28"
+    compileOnly "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
+    implementation "org.slf4j:slf4j-api:1.7.28"
 }
 
 run {

@@ -1,59 +1,48 @@
-version: "1.0"
+version: "3.0"
 module:
   meta:
     type: remote
   spec:
+    endpoints:
+    - endpoint:
+        meta:
+          kind: http
+        spec:
+          functions: shopping/*
+          urlPathTemplate: http://app:8000/statefun
+          timeouts:
+            call: 1min
+          maxNumBatchRequests: 100
     ingresses:
     - ingress:
         meta:
-          type: statefun.kafka.io/routable-protobuf-ingress
           id: shopping/restock
+          type: io.statefun.kafka/ingress
         spec:
           address: kafka-broker:19092
           consumerGroupId: remote-example
           topics:
           - topic: restock
-            typeUrl: com.googleapis/shopping.protocols.Supply.Restock
+            valueType: example/shopping.protocols.Supply.Restock
             targets:
             - shopping/supply
     - ingress:
         meta:
-          type: statefun.kafka.io/routable-protobuf-ingress
           id: shopping/add-to-basket
+          type: io.statefun.kafka/ingress
         spec:
           address: kafka-broker:19092
           consumerGroupId: remote-example
           topics:
           - topic: add-to-basket
-            typeUrl: com.googleapis/shopping.protocols.Basket.Add
+            valueType: example/shopping.protocols.Basket.Add
             targets:
             - shopping/basket
-    functions:
-    - function:
-        meta:
-          kind: http
-          type: shopping/supply
-        spec:
-          endpoint: http://app:8000/statefun
-          states:
-          - supply
-          maxNumBatchRequests: 100
-          timeout: 1min
-    - function:
-        meta:
-          kind: http
-          type: shopping/basket
-        spec:
-          endpoint: http://app:8000/statefun
-          states:
-          - basket
-          maxNumBatchRequests: 100
-          timeout: 1min
     egresses:
     - egress:
         meta:
-          type: statefun.kafka.io/generic-egress
           id: shopping/supply-changed
+          type: io.statefun.kafka/egress
         spec:
           address: kafka-broker:19092
           deliverySemantic:
@@ -61,8 +50,8 @@ module:
             transactionTimeoutMillis: 100000
     - egress:
         meta:
-          type: statefun.kafka.io/generic-egress
           id: shopping/basket-snapshots
+          type: io.statefun.kafka/egress
         spec:
           address: kafka-broker:19092
           deliverySemantic:
