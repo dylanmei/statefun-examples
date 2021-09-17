@@ -1,4 +1,4 @@
-FROM apache/flink-statefun:3.0.0-java11
+FROM apache/flink-statefun:3.1.0-java11
 
 RUN mkdir -p /opt/statefun/modules/shopping
 ADD module.yaml /opt/statefun/modules/shopping

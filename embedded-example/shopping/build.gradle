@@ -11,8 +11,6 @@ apply plugin: "kotlin-kapt"
 archivesBaseName = 'statefun-shopping'
 mainClassName = 'shopping.Harness'
 //mainClassName = 'org.apache.flink.statefun.flink.core.StatefulFunctionsJob'
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
 
 configurations {
     provided
@@ -55,6 +53,12 @@ sourceSets {
         compileClasspath += configurations.provided
         runtimeClasspath += main.output
         runtimeClasspath += configurations.provided
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
     }
 }
 
