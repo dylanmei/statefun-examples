@@ -1,7 +1,7 @@
 statefun-examples
 -----------------
 
-🌰 Dylan's [Flink Stateful Functions](https://statefun.io) `3.1` examples.
+🌰 Dylan's [Flink Stateful Functions](https://statefun.io) `3.2` examples.
 
 ### remote-example
 

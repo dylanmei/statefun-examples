@@ -1,5 +1,7 @@
 aiohttp
-flask==1.1.1
+flask==1.1.2
 gunicorn==20.0.4
-apache-flink-statefun==3.1.1
+apache-flink-statefun==3.2.0
 pluralizer==1.1.0
+kafka-python==2.0.2
+beautifultable

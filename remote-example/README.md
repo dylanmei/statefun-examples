@@ -1,6 +1,6 @@
 # Remote statefun example
 
-Similar to the classic [shopping-cart](https://github.com/apache/flink-statefun/tree/master/statefun-examples/statefun-shopping-cart-example) example, this example demonstrates two "statefun" functions:
+Similar to the classic [shopping-cart](https://github.com/apache/flink-statefun-playground/tree/release-3.2) example, this example demonstrates two "statefun" functions:
 - `shopping/basket` represent users' shopping baskets
 - `shopping/supply` represents a finite supply of products
 
