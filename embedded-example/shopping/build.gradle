@@ -35,8 +35,8 @@ dependencies {
     provided "org.apache.flink:statefun-sdk-java:$statefunVersion"
     provided "org.apache.flink:statefun-flink-harness:$statefunVersion"
 
-    provided "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
-    provided "org.slf4j:slf4j-api:1.7.28"
+    provided 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.2'
+    provided 'org.slf4j:slf4j-api:1.7.36'
 
     compileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
     kapt "com.google.auto.service:auto-service:1.0-rc6"

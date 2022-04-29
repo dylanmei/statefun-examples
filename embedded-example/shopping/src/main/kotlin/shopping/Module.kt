@@ -12,7 +12,7 @@ class Module : StatefulFunctionModule {
     }
 
     override fun configure(globalConfiguration: Map<String, String>, binder: StatefulFunctionModule.Binder) {
-        log.debug("Configuring our module")
+        log.info("Configuring our module")
 
         val mio = ModuleIO(globalConfiguration)
 

@@ -7,7 +7,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 object Harness {
-    val log: Logger = LoggerFactory.getLogger(Module::class.java)
+    val log: Logger = LoggerFactory.getLogger(Harness::class.java)
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -19,7 +19,15 @@ object Harness {
 
         StatefunHarness().run {
             withConfiguration("parallelism.default", "1")
-            withSupplyingIngress(ModuleIO.RESTOCK_INGRESS_ID, RestockGenerator())
+            withConfiguration("pipeline.max-parallelism", "64")
+
+            if (params.has("savepoint.path")) {
+                withConfiguration("state.backend", "filesystem")
+                withConfiguration("execution.savepoint.path", params.get("savepoint.path"))
+            } else {
+                withSupplyingIngress(ModuleIO.RESTOCK_INGRESS_ID, RestockGenerator())
+            }
+
             withSupplyingIngress(ModuleIO.ADD_TO_BASKET_INGRESS_ID, AddToBasketGenerator(1000L, 5000))
             withConsumingEgress(ModuleIO.SUPPLY_CHANGED_EGRESS_ID, SupplyChangedPrinter())
             withConsumingEgress(ModuleIO.BASKET_SNAPSHOTS_EGRESS_ID, BasketSnapshotPrinter())

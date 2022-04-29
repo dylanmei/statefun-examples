@@ -16,9 +16,8 @@ import shopping.protocols.generated.*
 import java.io.File
 
 object StateBootstrap {
-    val log: Logger = LoggerFactory.getLogger(Module::class.java)
+    val log: Logger = LoggerFactory.getLogger(StateBootstrap::class.java)
     val SUPPLY_FUNCTION_TYPE = FunctionType("shopping", "supply")
-    //val BASKET_FUNCTION_TYPE = FunctionType("shopping", "basket")
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -27,39 +26,26 @@ object StateBootstrap {
         val savepointPath = params["savepointPath"] ?: "/tmp/shopping.state"
         val env = ExecutionEnvironment.getExecutionEnvironment()
 
-        val supplyState = env.fromCollection(
-            listOf(
-                Tuple2.of("Shoes", makeSupply(100)),
-                Tuple2.of("Coat", makeSupply(100)),
-                Tuple2.of("Backpack", makeSupply(100)),
-                Tuple2.of("Purse", makeSupply(100)),
-                Tuple2.of("Hat", makeSupply(100)),
-                Tuple2.of("Watch", makeSupply(100)),
-                Tuple2.of("Pants", makeSupply(100)),
-                Tuple2.of("Umbrella", makeSupply(100)),
-            )
-        ).name("supply-source")
+        val supplyState = env.fromElements(
+            Tuple2.of("Shoes", makeSupply(100)),
+            Tuple2.of("Coat", makeSupply(100)),
+            Tuple2.of("Backpack", makeSupply(100)),
+            Tuple2.of("Purse", makeSupply(100)),
+            Tuple2.of("Hat", makeSupply(100)),
+            Tuple2.of("Watch", makeSupply(100)),
+            Tuple2.of("Pants", makeSupply(100)),
+            Tuple2.of("Umbrella", makeSupply(100)),
+        )
 
-        //val basketState = env.fromCollection(
-        //    listOf(
-        //        Tuple2.of("Dylan", makeEmptyBasket())
-        //    )
-        //).name("basket-source")
+        StatefulFunctionsSavepointCreator(64).apply {
+            withFsStateBackend()
 
-        StatefulFunctionsSavepointCreator(8).apply {
             withBootstrapData(supplyState) {
                 SupplyStateRouter()
             }
             withStateBootstrapFunctionProvider(SUPPLY_FUNCTION_TYPE) {
                 SupplyStateBootstrapFun()
             }
-
-            //withBootstrapData(basketState) {
-            //    BasketStateRouter()
-            //}
-            //withStateBootstrapFunctionProvider(BASKET_FUNCTION_TYPE) {
-            //    BasketStateBootstrapFun()
-            //}
 
             write(savepointPath)
         }
@@ -69,7 +55,6 @@ object StateBootstrap {
         }
 
         env.execute()
-
         log.info("Done! Savepoint is at $savepointPath.")
     }
 
@@ -79,39 +64,23 @@ object StateBootstrap {
         }
     }
 
-    //class BasketStateRouter : Router<Tuple2<String, Basket>> {
-    //    override fun route(message: Tuple2<String, Basket>, downstream: Router.Downstream<Tuple2<String, Basket>>) {
-    //        downstream.forward(BASKET_FUNCTION_TYPE, message.f0, message)
-    //    }
-    //}
-
     class SupplyStateBootstrapFun : StateBootstrapFunction {
         @Persisted
-        private val supply = PersistedValue.of("supply", Supply::class.java)
+        private val supplyState = PersistedValue.of("supply", Int::class.java)
 
         override fun bootstrap(context: Context, bootstrapData: Any?) {
             if (bootstrapData is Tuple2<*,*>) {
-                supply.set(bootstrapData.f1 as Supply)
+                log.info("Setting Supply state for ${bootstrapData.f0}")
+
+                val supply = bootstrapData.f1 as Supply
+                supplyState.set(supply.quantity)
+            } else {
+                log.error("Unexpected Supply state for ${context.self().id()}")
             }
         }
     }
 
-    //class BasketStateBootstrapFun : StateBootstrapFunction {
-    //    @Persisted
-    //    private val basket = PersistedValue.of("basket", Basket::class.java)
-
-    //    override fun bootstrap(context: Context, bootstrapData: Any?) {
-    //        if (bootstrapData is Tuple2<*,*>) {
-    //            basket.set(bootstrapData.f1 as Basket)
-    //        }
-    //    }
-    //}
-
     fun makeSupply(quantity: Int) = Supply.newBuilder()
         .setQuantity(quantity)
         .build()
-
-    //fun makeEmptyBasket() = Basket.newBuilder()
-    //    .addAllItems(emptyList())
-    //    .build()
 }
