@@ -1,18 +1,17 @@
 plugins {
+    id 'idea'
     id 'java-library'
-    id 'com.google.protobuf' version "0.8.14"
+    id 'com.google.protobuf'
 }
 
-apply plugin: 'idea'
-
 dependencies {
-    compileOnly "com.google.protobuf:protobuf-java:$protobufVersion"
+    api libs.protobuf.java
 }
 
 protobuf {
     protoc {
         // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:$protobufVersion"
+        artifact = libs.protobuf.compiler.get().toString()
     }
 
     generatedFilesBaseDir = "$projectDir/src/generated"

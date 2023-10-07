@@ -1,2 +1,46 @@
+pluginManagement {
+    plugins {
+        id 'org.jetbrains.kotlin.jvm' version '1.8.21'
+        id 'org.jetbrains.kotlin.kapt' version '1.8.21'
+        id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.21'
+        id 'com.google.protobuf' version '0.9.3'
+        id 'com.google.cloud.tools.jib' version '3.3.1'
+    }
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            version('flink', '1.16.2')
+            version('protobuf', '3.21.9')
+            version('statefun', '3.3.0')
+            version('serialization', '1.3.2')
+
+            library('asciitable', 'de.vandermeer', 'asciitable').version('0.3.2')
+            library('auto-service', 'com.google.auto.service', 'auto-service').version('1.0-rc6')
+            library('auto-service-annotations', 'com.google.auto.service', 'auto-service-annotations').version('1.0-rc6')
+            library('protobuf-compiler', 'com.google.protobuf', 'protoc').versionRef('protobuf')
+            library('protobuf-java', 'com.google.protobuf', 'protobuf-java').versionRef('protobuf')
+            library('protobuf-util', 'com.google.protobuf', 'protobuf-java-util').versionRef('protobuf')
+            library('serialization-core', 'org.jetbrains.kotlinx', 'kotlinx-serialization-core').versionRef('serialization')
+            library('serialization-json', 'org.jetbrains.kotlinx', 'kotlinx-serialization-json').versionRef('serialization')
+            library('statefun-distribution', 'org.apache.flink', 'statefun-flink-distribution').versionRef('statefun')
+            library('statefun-sdk', 'org.apache.flink', 'statefun-sdk-java').versionRef('statefun')
+            library('statefun-harness', 'org.apache.flink', 'statefun-flink-harness').versionRef('statefun')
+            library('slf4j-api', 'org.slf4j', 'slf4j-api').version('1.7.36')
+            library('slf4j-impl', 'org.apache.logging.log4j', 'log4j-slf4j-impl').version('2.17.2')
+
+            bundle('serialization', ['serialization-core', 'serialization-json'])
+            bundle('protobuf', ['protobuf-java', 'protobuf-util'])
+        }
+    }
+    repositories {
+        mavenCentral()
+    }
+}
+
 rootProject.name = 'example'
 include 'protocols', 'shopping'
