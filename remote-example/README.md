@@ -1,6 +1,6 @@
 # Remote statefun example
 
-Similar to the classic [shopping-cart](https://github.com/apache/flink-statefun-playground/tree/release-3.2) example, this example demonstrates two "statefun" functions:
+Similar to the classic [shopping-cart](https://github.com/apache/flink-statefun-playground/tree/release-3.3) example, this example demonstrates two "statefun" functions:
 - `shopping/basket` represent users' shopping baskets
 - `shopping/supply` represents a finite supply of products
 
@@ -15,7 +15,7 @@ Build the Flink images defined in the `docker-compose.yaml` file: `docker-compos
 Run the function and the accompanying Flink cluster: `docker-compose up`. _If the Kafka broker appears to crash, run `docker-compose restart kafka-broker` or restart this step._
 
 Now we have our Flink Stateful function running, but we don't have any state. We'll use `harness.py` to create and interact with our `supply` data.
-- Install a few requirements: `pip3 install beautifultable pluralizer`
+- Install a few requirements: `pip3 install beautifultable kafka-python pluralizer`
 - In a new shell, run `python3 harness.py restock` to add to our supply of products.
 - In a new shell, run `python3 harness.py add-to-basket` to take from our supply of products.
 - In a new shell, run `python3 harness.py print-supply` to show a live-feed of changes to our supply of products.
